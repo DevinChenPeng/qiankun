@@ -47,7 +47,12 @@
             </el-card>
           </div>
           <!-- 微应用容器 -->
-          <div id="subapp-container"></div>
+          <div v-else class="subapp-wrapper">
+            <div v-if="showMicroAppLoading" class="loading-placeholder">
+              <span class="loading-text">微应用加载中…</span>
+            </div>
+            <div v-show="!showMicroAppLoading" id="subapp-container"></div>
+          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -64,6 +69,18 @@ const router = useRouter()
 const route = useRoute()
 const activeMenu = ref('/home')
 const userInfo = ref({})
+const showMicroAppLoading = ref(false)
+const loadedMicroApps = new Set()
+
+const resolveMicroAppName = (path) => {
+  if (path.startsWith('/micro-app1')) {
+    return 'micro-app1'
+  }
+  if (path.startsWith('/micro-app2')) {
+    return 'micro-app2'
+  }
+  return null
+}
 
 onMounted(() => {
   // 获取用户信息
@@ -76,7 +93,7 @@ onMounted(() => {
   updateActiveMenu()
 
   // 加载微应用
-  loadMicroApp()
+  loadMicroApp(handleMicroAppLoading)
 })
 
 // 监听路由变化
@@ -85,12 +102,20 @@ watch(() => route.path, () => {
 })
 
 const updateActiveMenu = () => {
-  if (route.path.startsWith('/micro-app1')) {
+  const microAppName = resolveMicroAppName(route.path)
+
+  if (microAppName === 'micro-app1') {
     activeMenu.value = '/micro-app1'
-  } else if (route.path.startsWith('/micro-app2')) {
+  } else if (microAppName === 'micro-app2') {
     activeMenu.value = '/micro-app2'
   } else {
     activeMenu.value = '/home'
+  }
+
+  if (microAppName && !loadedMicroApps.has(microAppName)) {
+    showMicroAppLoading.value = true
+  } else {
+    showMicroAppLoading.value = false
   }
 }
 
@@ -103,6 +128,24 @@ const handleLogout = () => {
   sessionStorage.removeItem('userInfo')
   ElMessage.success('退出成功')
   router.push('/login')
+}
+
+const handleMicroAppLoading = (appName, isLoading) => {
+  const isActiveApp = resolveMicroAppName(route.path) === appName
+
+  if (!isActiveApp) {
+    return
+  }
+
+  if (!isLoading) {
+    loadedMicroApps.add(appName)
+    showMicroAppLoading.value = false
+    return
+  }
+
+  if (!loadedMicroApps.has(appName)) {
+    showMicroAppLoading.value = true
+  }
 }
 </script>
 
@@ -153,5 +196,26 @@ const handleLogout = () => {
 #subapp-container {
   width: 100%;
   min-height: 500px;
+}
+
+.subapp-wrapper {
+  width: 100%;
+  min-height: 500px;
+  position: relative;
+}
+
+.loading-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 500px;
+  background-color: #fff;
+  border: 1px dashed #dcdfe6;
+  color: #909399;
+}
+
+.loading-text {
+  font-size: 16px;
 }
 </style>

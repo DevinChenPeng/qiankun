@@ -1,8 +1,16 @@
-import { registerMicroApps, start, setDefaultMountApp } from 'qiankun'
+import { registerMicroApps, start } from 'qiankun'
 
-let microAppInstance = null
+export function loadMicroApp(onLoadingChange) {
+  const notifyLoading = (appName, isLoading) => {
+    if (typeof onLoadingChange === 'function') {
+      onLoadingChange(appName, isLoading)
+    }
+  }
 
-export function loadMicroApp() {
+  const createLoader = (appName) => (loading) => {
+    notifyLoading(appName, loading)
+  }
+
   // 获取登录用户信息
   const getUserInfo = () => {
     const userInfoStr = sessionStorage.getItem('userInfo')
@@ -17,6 +25,7 @@ export function loadMicroApp() {
         entry: '//localhost:8081',
         container: '#subapp-container',
         activeRule: '/micro-app1',
+        loader: createLoader('micro-app1'),
         props: {
           userInfo: getUserInfo(),
           mainAppName: '主应用'
@@ -27,6 +36,7 @@ export function loadMicroApp() {
         entry: '//localhost:8082',
         container: '#subapp-container',
         activeRule: '/micro-app2',
+        loader: createLoader('micro-app2'),
         props: {
           userInfo: getUserInfo(),
           mainAppName: '主应用'

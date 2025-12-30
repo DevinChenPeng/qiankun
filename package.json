@@ -5,10 +5,9 @@
   "description": "微前端学习项目 - 基于 qiankun",
   "scripts": {
     "install:all": "pnpm install",
-    "dev:micro1": "pnpm --filter micro-app1 dev",
-    "dev:micro2": "pnpm --filter micro-app2 dev",
-    "dev:main": "pnpm --filter main-app dev",
-    "dev": "pnpm run dev:micro1 & pnpm run dev:micro2 & pnpm run dev:main",
+    "dev:1": "pnpm --filter micro-app1 dev",
+    "dev:2": "pnpm --filter micro-app2 dev",
+    "dev": "pnpm --filter main-app dev",
     "build:all": "pnpm -r build"
   },
   "keywords": ["qiankun", "micro-frontend", "vue3", "vite"],
