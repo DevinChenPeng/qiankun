@@ -8,6 +8,7 @@
     "dev:1": "pnpm --filter micro-app1 dev",
     "dev:2": "pnpm --filter micro-app2 dev",
     "dev": "pnpm --filter main-app dev",
+    "dev:all": "pnpm --parallel --filter main-app --filter micro-app1 --filter micro-app2 dev",
     "build:all": "pnpm -r build"
   },
   "keywords": ["qiankun", "micro-frontend", "vue3", "vite"],

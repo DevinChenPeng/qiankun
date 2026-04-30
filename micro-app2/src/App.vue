@@ -1,5 +1,6 @@
 <template>
   <div id="micro-app2" data-qiankun-app="micro-app2">
+		micro-app2
     <router-view />
   </div>
 </template>

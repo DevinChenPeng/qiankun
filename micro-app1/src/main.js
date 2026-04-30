@@ -1,5 +1,5 @@
 import { createApp } from "vue";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createMemoryHistory, createWebHistory } from "vue-router";
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import App from "./App.vue";
@@ -9,22 +9,62 @@ import {
   qiankunWindow,
 } from "vite-plugin-qiankun/dist/helper";
 
-let app = null;
-let router = null;
-let history = null;
+const appInstances = new Map();
+
+const resolveInstanceId = (props = {}) => {
+  if (props.instanceId) {
+    return props.instanceId;
+  }
+
+  if (props.container?.id) {
+    return `micro-app1:${props.container.id}`;
+  }
+
+  return qiankunWindow.__POWERED_BY_QIANKUN__
+    ? "micro-app1:qiankun-default"
+    : "micro-app1:standalone";
+};
+
+const resolveContainerElement = (container) => {
+  return container ? container.querySelector("#app") : document.getElementById("app");
+};
+
+const createAppHistory = (props = {}) => {
+  const isMemoryMode = props.routerMode === "memory" || props.from === "dialog";
+  const routerBase = props.routerBase || "/";
+
+  return isMemoryMode ? createMemoryHistory(routerBase) : createWebHistory(routerBase);
+};
+
+const destroyInstance = (instanceId) => {
+  const instance = appInstances.get(instanceId);
+
+  if (!instance) {
+    return;
+  }
+
+  instance.app?.unmount();
+  appInstances.delete(instanceId);
+};
 
 function render(props = {}) {
   const { container, userInfo } = props;
+  const instanceId = resolveInstanceId(props);
+  const containerElement = resolveContainerElement(container);
 
-  history = createWebHistory(
-    qiankunWindow.__POWERED_BY_QIANKUN__ ? "/micro-app1" : "/"
-  );
-  router = createRouter({
+  if (!containerElement) {
+    return null;
+  }
+
+  destroyInstance(instanceId);
+
+  const history = createAppHistory(props);
+  const router = createRouter({
     history,
     routes,
   });
 
-  app = createApp(App);
+  const app = createApp(App);
   app.use(ElementPlus);
   app.use(router);
 
@@ -36,10 +76,16 @@ function render(props = {}) {
     app.config.globalProperties.$userInfo = userInfo;
   }
 
-  const containerElement = container
-    ? container.querySelector("#app")
-    : document.getElementById("app");
   app.mount(containerElement);
+
+  appInstances.set(instanceId, {
+    app,
+    router,
+    history,
+    containerElement,
+  });
+
+  return appInstances.get(instanceId);
 }
 
 // 独立运行时
@@ -57,10 +103,7 @@ renderWithQiankun({
   // 应用每次 切出/卸载 会调用的方法，通常在这里我们会卸载微应用的应用实例
   unmount(props) {
     console.log("[micro-app1] unmount", props);
-    app?.unmount();
-    app = null;
-    router = null;
-    history = null;
+    destroyInstance(resolveInstanceId(props));
   },
   // 可选生命周期钩子，仅使用 loadMicroApp 方式加载微应用时生效
   bootstrap() {

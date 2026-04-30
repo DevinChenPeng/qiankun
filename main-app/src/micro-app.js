@@ -28,7 +28,11 @@ export function loadMicroApp(onLoadingChange) {
         loader: createLoader('micro-app1'),
         props: {
           userInfo: getUserInfo(),
-          mainAppName: '主应用'
+          mainAppName: '主应用',
+          instanceId: 'micro-app1-main',
+          from: 'main-container',
+          routerMode: 'web',
+          routerBase: '/micro-app1'
         }
       },
       {
@@ -39,7 +43,11 @@ export function loadMicroApp(onLoadingChange) {
         loader: createLoader('micro-app2'),
         props: {
           userInfo: getUserInfo(),
-          mainAppName: '主应用'
+          mainAppName: '主应用',
+          instanceId: 'micro-app2-main',
+          from: 'main-container',
+          routerMode: 'web',
+          routerBase: '/micro-app2'
         }
       }
     ],
